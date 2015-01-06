@@ -263,3 +263,244 @@ Sub Format_Whole_TB()
     Call format_code_breakout_tab
     
 End Sub
+
+
+Sub Standard_Number_Format()
+'
+' Standard_Number_Format Macro
+' Recorded 10 Nov 2014 - apply number formatting to cell
+'
+' Keyboard Shortcut: Ctrl+m
+'
+    Selection.NumberFormat = "#,##0;[Red](#,##0);-"
+    With Selection
+        .Font.Name = "Calibri"
+        .HorizontalAlignment = xlCenter
+        .VerticalAlignment = xlBottom
+        .WrapText = False
+        .Orientation = 0
+        .AddIndent = False
+        .IndentLevel = 0
+        .ShrinkToFit = False
+        .ReadingOrder = xlContext
+        .MergeCells = False
+    End With
+End Sub
+
+Sub copy_and_paste_numbers()
+
+'--> This doesn't work at the moment and I think the culprit is the .Worksheets(1) instead of .Sheets("Sheet1")
+
+    Dim vFile As Variant
+    Dim wbCopyTo As Workbook
+    Dim wsCopyTo As Worksheet
+    Dim wbCopyFrom As Workbook
+    Dim wsCopyFrom As Worksheet
+
+    Set wbCopyTo = ActiveWorkbook
+    Set wsCopyTo = ActiveSheet
+    
+    '----------------------------------------------------------------------------------------
+    ' Open file with data to be copied
+    
+        vFile = Application.GetOpenFilename("Excel Files (*.xl*)," & _
+        "*.xl*", 1, "Select Excel File", "Open", False)
+    
+    ' If Cancel then Exit
+        If TypeName(vFile) = "Boolean" Then
+            Exit Sub
+        Else
+        Set wbCopyFrom = Workbooks.Open(vFile)
+        Set wsCopyFrom = wbCopyFrom.Worksheets(1)
+        End If
+    
+    '-----------------------------------------------------------------------------------------
+    With wsCopyFrom
+    ' Copy From this Place in Source Workbook:
+        .Range("Z2:Z200").Copy
+    End With
+    
+    With wsCopyTo
+    ' Paste to this Place in Destination Workbook:
+        wsCopyTo.Range("D5").PasteSpecial _
+        Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=True, Transpose:=False
+    End With
+    
+    
+    ' Close File that was Opened
+        wbCopyFrom.Close SaveChanges:=False
+
+End Sub
+
+Sub copy_and_paste_numbers_effort2()
+
+    Dim wbI As Workbook, wbO As Workbook
+    Dim wsI As Worksheet, wsO As Worksheet
+
+    '~~> Source/Input Workbook
+    Set wbI = ActiveWorkbook
+    '~~> Set the relevant sheet from where you want to copy
+    Set wsI = wbI.Sheets("Sheet1")
+
+    '----------------------------------------------------------------------------------------
+    ' Open file with data to be copied
+    
+    vFile = Application.GetOpenFilename("Excel Files (*.xl*)," & _
+    "*.xl*", 1, "Select Excel File", "Open", False)
+    
+    ' If Cancel then Exit
+    If TypeName(vFile) = "Boolean" Then
+        Exit Sub
+    Else
+    Set wbO = Workbooks.Open(vFile)
+    Set wsO = wbO.Sheets("Display")
+    End If
+    
+    '-----------------------------------------------------------------------------------------
+
+
+    With wbO
+        '~~> Set the relevant sheet to where you want to paste
+        Set wsO = wbO.Sheets("Display")
+
+        '~~> Copy the range
+        wsO.Range("Z2:Z200").Copy
+
+        '~~> Paste it in say Cell D5. Change as applicable
+        wsI.Range("D5").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, _
+        SkipBlanks:=True, Transpose:=False
+        
+        '~~> Copy the range
+        wsO.Range("T2:T200").Copy
+        
+        '~~> Paste it in say Cell D5. Change as applicable
+        wsI.Range("B5").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, _
+        SkipBlanks:=True, Transpose:=False
+    End With
+
+End Sub
+
+
+Sub attempt_simple_copy_paste_multiple_columns()
+
+'--> No need
+Dim ws1 As Worksheet
+
+'--> No need
+Dim ws2 As Worksheet
+
+'--> I'll need to set my range again, might be better just to do it this way
+Dim rng1 As Range
+
+'--> No need
+Set ws1 = Sheets("Input")
+
+'--> No need
+Set ws2 = Sheets("Output")
+
+'--> I should probably include this part
+On Error Resume Next
+
+'--> Setting my range - should probably do it this way
+Set rng1 = ws1.Columns("B").SpecialCells(xlConstants)
+
+'--> Should probably include this part
+On Error GoTo 0
+
+'--> I'll include this part too
+If rng1 Is Nothing Then Exit Sub
+
+'--> Include (why not??)
+Application.ScreenUpdating = False
+
+'--> Set your range like this, change rng2 obviously
+Set rng2 = ws2.[b2]
+
+'--> This is how he's actually copying from one sheet to another
+rng1.Copy rng2
+'copy column I to Output C2
+rng1.Offset(0, 7).Copy rng2.Offset(0, 1)
+'copy column N to Output d2
+rng1.Offset(0, 12).Copy rng2.Offset(0, 2)
+rng2.Offset(0, 3).Resize(rng1.Cells.Count, 1) = "Scheduled Site"
+
+'-->Include this bit too
+Application.ScreenUpdating = True
+
+End Sub
+
+
+Sub combined_copy_paste()
+
+    Dim wbI As Workbook, wbO As Workbook
+    Dim wsI As Worksheet, wsO As Worksheet
+
+    '~~> Source/Input Workbook
+    Set wbI = ActiveWorkbook
+    '~~> Set the relevant sheet from where you want to copy
+    Set wsI = wbI.Sheets("Sheet1")
+
+    '----------------------------------------------------------------------------------------
+    ' Open file with data to be copied
+    
+    vFile = Application.GetOpenFilename("Excel Files (*.xl*)," & _
+    "*.xl*", 1, "Select Excel File", "Open", False)
+    
+    ' If Cancel then Exit
+    If TypeName(vFile) = "Boolean" Then
+        Exit Sub
+    Else
+    Set wbO = Workbooks.Open(vFile)
+    Set wsO = wbO.Sheets("Display")
+    End If
+    
+    '-----------------------------------------------------------------------------------------
+
+
+'--> I'll need to set my range again, might be better just to do it this way
+Dim rng1 As Range
+
+'--> I should probably include this part
+On Error Resume Next
+
+
+'--> Setting my range - should probably do it this way
+Set rng1 = wsO.Range("Z2:Z200").SpecialCells(xlConstants)
+'--> wsO.Range("Z2:Z200")
+
+'--> Should probably include this part
+On Error GoTo 0
+
+'--> I'll include this part too
+If rng1 Is Nothing Then Exit Sub
+
+'--> Include (why not??)
+Application.ScreenUpdating = False
+
+'--> Set your range like this, change rng2 obviously
+Set rng2 = wsI.[D5]
+
+'--> This is how he's actually copying from one sheet to another
+rng1.Copy rng2
+
+'copy column I to Output C2
+'--> I need to offset input range by -6, offset output range by -2 (I'll take in the dates)
+rng1.Offset(0, -6).Copy rng2.Offset(0, -2)
+
+'copy column N to Output d2
+'--> now take in the description!
+rng1.Offset(0, -3).Copy rng2.Offset(0, -1)
+
+'-->Include this bit too
+Application.ScreenUpdating = True
+
+
+End Sub
+
+Sub misc()
+
+    ' Paste to this Place in Destination Workbook:
+    wsCopyTo.Range("D5").PasteSpecial Paste:=xlPasteValues, _
+        Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+
+End Sub
